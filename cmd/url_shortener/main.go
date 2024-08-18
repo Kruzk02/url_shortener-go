@@ -9,6 +9,7 @@ import (
 
 func main() {
 	repository.InitDB()
+	repository.InitRedis()
 	router := api.SetupRoutes()
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
