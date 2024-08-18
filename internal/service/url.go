@@ -1,20 +1,46 @@
 package service
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/url"
+	"time"
 	"url_shortener/internal/dto"
 	"url_shortener/internal/model"
 	"url_shortener/internal/repository"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func GetOriginByCode(code string) (model.URL, error) {
 	if code == "" {
 		return model.URL{}, errors.New("code cannot be empty")
 	}
-	return repository.GetOriginByCode(code)
+
+	cached, err := repository.GetRedis().Get(context.Background(), code).Result()
+	if err == nil {
+		return model.URL{
+			Origin: cached,
+			Code:   code,
+		}, nil
+	} else if err != redis.Nil {
+		return model.URL{}, err
+	}
+
+	url, err := repository.GetOriginByCode(code)
+	if err != nil {
+		return model.URL{}, err
+	}
+
+	err = repository.GetRedis().Set(context.Background(), code, url.Origin, time.Hour*2).Err()
+	if err != nil {
+		return url, err
+	}
+
+	return url, nil
 }
 
 func Save(urlDTO dto.UrlDTO) (string, error) {
@@ -28,7 +54,15 @@ func Save(urlDTO dto.UrlDTO) (string, error) {
 	}
 
 	url := model.URL{Origin: urlDTO.Origin, Code: code}
-	return repository.Save(url)
+	if err := repository.GetRedis().Set(context.Background(), url.Code, url.Origin, time.Hour*2).Err(); err != nil {
+		log.Printf("Error caching URL in Redis: %v", err)
+	}
+
+	if _, err := repository.Save(url); err != nil {
+		return "", err
+	}
+
+	return code, nil
 }
 
 func validateUrl(rawUrl string) error {
