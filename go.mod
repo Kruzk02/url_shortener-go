@@ -19,4 +19,5 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/time v0.6.0
 )
