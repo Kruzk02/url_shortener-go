@@ -48,21 +48,25 @@ func Save(urlDTO dto.UrlDTO) (string, error) {
 		return "", err
 	}
 
-	code, err := generateUniqueCode(15)
-	if err != nil {
-		return "", err
-	}
+	if repository.CheckOriginExists(urlDTO.Origin) {
+		return repository.GetCodeByOrigin(urlDTO.Origin)
+	} else {
+		code, err := generateUniqueCode(15)
+		if err != nil {
+			return "", err
+		}
 
-	url := model.URL{Origin: urlDTO.Origin, Code: code}
-	if err := repository.GetRedis().Set(context.Background(), url.Code, url.Origin, time.Hour*2).Err(); err != nil {
-		log.Printf("Error caching URL in Redis: %v", err)
-	}
+		url := model.URL{Origin: urlDTO.Origin, Code: code}
+		if err := repository.GetRedis().Set(context.Background(), url.Code, url.Origin, time.Hour*2).Err(); err != nil {
+			log.Printf("Error caching URL in Redis: %v", err)
+		}
 
-	if _, err := repository.Save(url); err != nil {
-		return "", err
-	}
+		if _, err := repository.Save(url); err != nil {
+			return "", err
+		}
 
-	return code, nil
+		return code, nil
+	}
 }
 
 func validateUrl(rawUrl string) error {
