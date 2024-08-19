@@ -39,3 +39,26 @@ func Save(url model.URL) (string, error) {
 
 	return url.Code, nil
 }
+
+func CheckOriginExists(origin string) bool {
+	var exists bool
+	row := GetDB().QueryRow("SELECT EXISTS(SELECT 1 FROM url WHERE origin = ?)", origin)
+	err := row.Scan(&exists)
+	if err != nil {
+		return false
+	}
+	return exists
+}
+
+func GetCodeByOrigin(origin string) (string, error) {
+	var url model.URL
+	row := GetDB().QueryRow("SELECT code FROM url WHERE origin = ?", origin)
+	if err := row.Scan(&url.Code); err != nil {
+		if err == sql.ErrNoRows {
+			return url.Code, fmt.Errorf("Url with origin %s is not found: %w", origin, err)
+		}
+		log.Printf("Error rettrieving URL by origin %s: %v", origin, err)
+		return url.Code, err
+	}
+	return url.Code, nil
+}
