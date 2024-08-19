@@ -20,10 +20,10 @@
    - If it exists, a service return short url to the user.
    - If not, the service generates a unique code for the long URL and returns it to the user.
 2. Redirecting:
-  - A user accesses a short url.
-  - The API checks if the short URL exists in Redis.
-  - if found, the service redirects the user to the original URL.
-  - if not, the service checks in the database.
+     - A user accesses a short url.
+     - The API checks if the short URL exists in Redis.
+     - if found, the service redirects the user to the original URL.
+     - if not, the service checks in the database.
 
 # Technologies Used
  - Go
