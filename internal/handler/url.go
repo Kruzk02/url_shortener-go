@@ -3,14 +3,25 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
+
+	"golang.org/x/time/rate"
+
 	"url_shortener/internal/dto"
 	"url_shortener/internal/service"
 )
+
+var limiter = rate.NewLimiter(rate.Every(time.Second), 10)
 
 func GetOriginByCodeHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		http.Error(w, "Code is required", http.StatusBadRequest)
+		return
+	}
+	println(limiter.Tokens())
+	if !limiter.Allow() {
+		http.Error(w, "Too many requests", http.StatusTooManyRequests)
 		return
 	}
 
@@ -32,6 +43,13 @@ func SaveUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&urlDTO); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	println(limiter.Tokens())
+
+	if !limiter.Allow() {
+		http.Error(w, "Too many requests", http.StatusTooManyRequests)
 		return
 	}
 
