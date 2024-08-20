@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
@@ -17,7 +18,7 @@ func InitRedis() {
 	redisonce.Do(func() {
 		log.Println("Initializing Redis client...")
 		client = redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 			Password: "",
 			DB:       0,
 		})

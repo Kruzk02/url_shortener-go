@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/go-sql-driver/mysql"
@@ -17,11 +19,11 @@ func InitDB() {
 	dbonce.Do(func() {
 		var err error
 		cfg := mysql.Config{
-			User:   "root",
-			Passwd: "Password",
+			User:   os.Getenv("DB_USER"),
+			Passwd: os.Getenv("DB_PASSWORD"),
 			Net:    "tcp",
-			Addr:   "127.0.0.1:3306",
-			DBName: "url",
+			Addr:   fmt.Sprintf("%s:%s", os.Getenv("DB_HOST"), os.Getenv("DB_PORT")),
+			DBName: os.Getenv("DB_NAME"),
 		}
 
 		db, err = sql.Open("mysql", cfg.FormatDSN())
