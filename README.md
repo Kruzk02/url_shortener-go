@@ -35,9 +35,8 @@
 
    1. Clone the repository: <code> git clone https://github.com/Kruzk02/url_shortener-go </code>
    2. Navigate to the project directory: <code> cd url_shortener-go </code>
-   3. Install Go dependencies: <code> go mod download </code>
-   4. Start the project using cmd (have mysql and redis run before start project): <code> go run cmd/url_shortener/main.go </code>
-   5. Access the API at <http://localhost:8000>.
+   3. Start Docker compose.
+   4. Access the API at <http://localhost:8000>.
 
 # API Endpoints
    - Endpoint: `POST /url`
